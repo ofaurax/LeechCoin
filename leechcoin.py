@@ -8,6 +8,10 @@ import sqlite3
 import traceback
 import datetime
 
+headers = { 'User-Agent' : 'Mozilla/5.0 (compatible; Googlebot/2.1;'
+                               +' +http://www.google.com/bot.html)' } 
+                               # http://www.useragentstring.com
+
 parser = argparse.ArgumentParser()
 parser.add_argument('cmd')
 parser.add_argument('-d',
@@ -46,11 +50,11 @@ if cmd == 'leech':
     c = conn.cursor()
     c.execute('CREATE TABLE IF NOT EXISTS apparts (id text PRIMARY KEY, prix int, surface int, cp int, ville text, nom text, jour int, mois int, annee int, heure text)')
 
-    response = urllib2.urlopen(
+    req = urllib2.Request(
         'http://www.leboncoin.fr/ventes_immobilieres/offres/'
         + 'provence_alpes_cote_d_azur/bouches_du_rhone/'
-        + '?pe=8&sqs=6&ros=2&ret=1&ret=2&f=p&o=' + str(page))
-    
+        + '?pe=8&sqs=6&ros=2&ret=1&ret=2&f=p&o=' + str(page), None, headers) 
+    response = urllib2.urlopen(req)
     re_ids = re.compile('ventes_immobilieres/(?P<id>[0-9]+)\.htm')
     m = re_ids.finditer(response.read())
 
