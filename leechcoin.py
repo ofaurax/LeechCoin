@@ -51,8 +51,8 @@ if cmd == 'leech':
         + 'provence_alpes_cote_d_azur/bouches_du_rhone/'
         + '?pe=8&sqs=6&ros=2&ret=1&ret=2&f=p&o=' + str(page))
     
-    re_ids = re.compile('ventes_immobilieres/(?P<id>[0-9]+)\.htm')
-    m = re_ids.finditer(response.read())
+    re_id = re.compile('ventes_immobilieres/(?P<id>[0-9]+)\.htm')
+    m = re_id.finditer(response.read())
 
     for m2 in m:
 
