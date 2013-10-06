@@ -140,4 +140,28 @@ if cmd == 'leech':
 
     conn.commit()
 
+if cmd == 'stats':
+
+    conn = sqlite3.connect(database)
+    c = conn.cursor()
+
+    prix_m2_cp = {}
+
+    c.execute('SELECT * FROM apparts')
+    tmp = c.fetchone()
+    while(tmp):
+        #print fdb.format(*tmp)
+        try:
+            prix_m2_cp[tmp[3]]
+        except:
+            prix_m2_cp[tmp[3]] = []
+        prix_m2_cp[tmp[3]].append(tmp[1]/tmp[2])
+        #print tmp[1]/tmp[2], tmp[3]
+        tmp = c.fetchone()
+
+    print prix_m2_cp
+
+    for k,v in prix_m2_cp.iteritems():
+        print u'{0:5} {1:4} {2}'.format( k, sum(v)/len(v), len(v) )
+
 print 'Fin.'
