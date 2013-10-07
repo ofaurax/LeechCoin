@@ -66,7 +66,10 @@ if cmd == 'leech':
         c.execute('SELECT * FROM apparts WHERE id=?', (id,))
         tmp = c.fetchone()
         if(tmp):
-            print fdb.format(*tmp)
+            try:
+                print fdb.format(*tmp)
+            except Exception:
+                print tmp
             continue
 
         try:
@@ -81,8 +84,8 @@ if cmd == 'leech':
             m3 = re.findall('class="price"\>([0-9 ]+).*\<', rep)
             prix = int(m3[0].replace(' ', ''))
             m3 = re.findall(
-                '<th>Surface : </th>\s*<td>([0-9]+) m<sup>2</sup>', rep)
-            surface = int(m3[0])
+                '<th>Surface : </th>\s*<td>([0-9 ]+) m<sup>2</sup>', rep)
+            surface = int(m3[0].replace(' ', ''))
             m3 = re.findall(
                 '<th>Code postal :</th>\s*<td>([0-9]+)</td>', rep)
             cp = m3[0]
@@ -139,5 +142,32 @@ if cmd == 'leech':
         #exit(0)
 
     conn.commit()
+
+if cmd == 'stats':
+
+    conn = sqlite3.connect(database)
+    c = conn.cursor()
+
+    prix_m2_cp = {}
+
+    c.execute('SELECT * FROM apparts')
+    tmp = c.fetchone()
+    while(tmp):
+        #print fdb.format(*tmp)
+        try:
+            prix_m2_cp[tmp[3]]
+        except:
+            prix_m2_cp[tmp[3]] = []
+
+        if tmp[1]/tmp[2] > 1000 and tmp[1]/tmp[2] < 8000:
+            prix_m2_cp[tmp[3]].append(tmp[1]/tmp[2])
+        #print tmp[1]/tmp[2], tmp[3]
+        tmp = c.fetchone()
+
+    print prix_m2_cp
+
+    for k,v in prix_m2_cp.iteritems():
+        if len(v) < 2: continue
+        print u'{0:5} {1:4}€/m² {2}'.format( k, sum(v)/len(v), len(v) )
 
 print 'Fin.'
