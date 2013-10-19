@@ -31,6 +31,8 @@ fdb = u'DB : ' + fgen
 
 if cmd == 'help':
     print 'leech [num]: download of data from page [num] (default:1)'
+    print 'list'
+    print 'stats [code postal]'
 
 if cmd == 'list':
     conn = sqlite3.connect(database)
@@ -48,7 +50,7 @@ if cmd == 'leech':
 
     conn = sqlite3.connect(database)
     c = conn.cursor()
-    c.execute('CREATE TABLE IF NOT EXISTS apparts (id text PRIMARY KEY, prix int, surface int, cp int, ville text, nom text, jour int, mois int, annee int, heure text)')
+    c.execute('CREATE TABLE IF NOT EXISTS apparts (id text PRIMARY KEY, prix int, surface int, cp int, ville text, nom text, jour int, mois int, annee int, heure text, tel text)')
 
     req = urllib2.Request(
         'http://www.leboncoin.fr/ventes_immobilieres/offres/'
@@ -97,7 +99,6 @@ if cmd == 'leech':
                 + 'href="http://www2.leboncoin.fr/ar.ca=21_s&amp;id=[0-9]+" '
                 + 'onclick="return [^"]+">([^<]+)</a> '
                 + 'le (\d+) (.+) &agrave; (\d+:\d+). </div>', rep)
-        #print m3, m3[0]
             nom = m3[0][0].decode('cp1252')
             jour = m3[0][1]
             mois = m3[0][2].decode('cp1252')
@@ -124,6 +125,14 @@ if cmd == 'leech':
                 annee -= 1
 
             heure = m3[0][3]
+
+            m3 = re.findall('/pg/0([^\.]+)\.gif" class="AdPhonenum', rep)
+            try:
+                tel_raw = m3[0]
+            except:
+                tel_raw = ''
+            #print m3, m3[0]
+
         except Exception as e:
             print 'Error on url', url
             traceback.print_exc()
@@ -131,13 +140,13 @@ if cmd == 'leech':
             continue
 
         #print ville
-        f = u'{0:6}€ {1:3}m² {4:4}€/m² {2:5} {3:22} {6:20} {7}/{8}/{9}@{10} {5}'
+        f = u'{0:6}€ {1:3}m² {4:4}€/m² {2:5} {3:22} {6:20} {7}/{8}/{9}@{10} {5} {11}'
         print f.format(
             prix, surface, cp, ville, prix / surface,
-            url, nom, jour, mois, annee, heure)
+            url, nom, jour, mois, annee, heure, tel_raw)
 
-        c.execute('INSERT INTO apparts VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', \
-                  (id, prix, surface, cp, ville, nom, jour, mois, annee, heure))
+        c.execute('INSERT INTO apparts VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', \
+                  (id, prix, surface, cp, ville, nom, jour, mois, annee, heure, tel_raw))
 
         #exit(0)
 
@@ -145,12 +154,21 @@ if cmd == 'leech':
 
 if cmd == 'stats':
 
+    try:
+        cp = int(args.params[0])
+    except:
+        cp = 0
+
     conn = sqlite3.connect(database)
     c = conn.cursor()
 
     prix_m2_cp = {}
 
-    c.execute('SELECT * FROM apparts')
+    if cp:
+        c.execute('SELECT * FROM apparts WHERE cp=?', (cp,))
+    else:
+        c.execute('SELECT * FROM apparts')
+        
     tmp = c.fetchone()
     while(tmp):
         #print fdb.format(*tmp)
@@ -160,11 +178,19 @@ if cmd == 'stats':
             prix_m2_cp[tmp[3]] = []
 
         if tmp[1]/tmp[2] > 1000 and tmp[1]/tmp[2] < 8000:
+
+            if cp:
+                print '{0} {1:3} {2} {3:22} {4}'.format(
+                    tmp[1], tmp[2],
+                    str(tmp[1]/tmp[2])+'€/m²',
+                    tmp[5].encode('utf8'),
+                    'http://www.leboncoin.fr/ventes_immobilieres/'+tmp[0]+'.htm')
+
             prix_m2_cp[tmp[3]].append(tmp[1]/tmp[2])
         #print tmp[1]/tmp[2], tmp[3]
         tmp = c.fetchone()
 
-    print prix_m2_cp
+    #print prix_m2_cp
 
     for k,v in prix_m2_cp.iteritems():
         if len(v) < 2: continue
