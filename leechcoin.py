@@ -50,7 +50,15 @@ if cmd == 'leech':
 
     conn = sqlite3.connect(database)
     c = conn.cursor()
-    c.execute('CREATE TABLE IF NOT EXISTS apparts (id text PRIMARY KEY, prix int, surface int, cp int, ville text, nom text, jour int, mois int, annee int, heure text, tel text)')
+    c.execute('CREATE TABLE IF NOT EXISTS apparts ( '+
+    'id text PRIMARY KEY, ' +
+    'prix int, ' +
+    'surface int, ' +
+    'cp int, ville text, ' +
+    'nom text, ' +
+    'jour int, mois int, annee int, heure text, ' +
+    'tel text, ' +
+    'desc text)')
 
     req = urllib2.Request(
         'http://www.leboncoin.fr/ventes_immobilieres/offres/'
@@ -133,6 +141,12 @@ if cmd == 'leech':
                 tel_raw = ''
             #print m3, m3[0]
 
+            m3 = re.findall('class="content">([^<]+)<', rep)
+            try:
+                desc = m3[0].decode('cp1252')
+            except:
+                desc = ''
+
         except Exception as e:
             print 'Error on url', url
             traceback.print_exc()
@@ -144,9 +158,10 @@ if cmd == 'leech':
         print f.format(
             prix, surface, cp, ville, prix / surface,
             url, nom, jour, mois, annee, heure, tel_raw)
+        print desc
 
-        c.execute('INSERT INTO apparts VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', \
-                  (id, prix, surface, cp, ville, nom, jour, mois, annee, heure, tel_raw))
+        c.execute('INSERT INTO apparts VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', \
+                  (id, prix, surface, cp, ville, nom, jour, mois, annee, heure, tel_raw, desc))
 
         #exit(0)
 
