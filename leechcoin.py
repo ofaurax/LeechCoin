@@ -13,7 +13,7 @@ headers = { 'User-Agent' : 'Mozilla/5.0 (compatible; Googlebot/2.1;'
                                # http://www.useragentstring.com
 
 parser = argparse.ArgumentParser()
-parser.add_argument('cmd')
+parser.add_argument('cmd', choices=['help', 'leech', 'list', 'stats'])
 parser.add_argument('-d',
                     help='database name to use (default:database.db)',
                     default='database.db')
