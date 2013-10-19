@@ -26,7 +26,7 @@ print 'Args :', args
 cmd = args.cmd
 database = args.d
 
-fgen = u'{0} {1:6}€ {2:3}m² {3} {4:30} {5:25} {6}/{7}/{8} {9}'
+fgen = u'{0} {1:6}€ {2:3}m² {3} {4:30} {5:30} {6}/{7}/{8} {9}'
 fdb = u'DB : ' + fgen
 
 if cmd == 'help':
@@ -58,12 +58,15 @@ if cmd == 'leech':
     'nom text, ' +
     'jour int, mois int, annee int, heure text, ' +
     'tel text, ' +
-    'desc text)')
+    'desc text, ' +
+    'siren text)')
 
     req = urllib2.Request(
         'http://www.leboncoin.fr/ventes_immobilieres/offres/'
         + 'provence_alpes_cote_d_azur/bouches_du_rhone/'
-        + '?pe=8&sqs=6&ros=2&ret=1&ret=2&f=p&o=' + str(page), None, headers) 
+        + '?pe=8&sqs=6&ros=2&ret=1&ret=2'
+        #+ '&f=p' # p:particuler c:pro
+        + '&o=' + str(page), None, headers) 
     response = urllib2.urlopen(req)
     re_id = re.compile('ventes_immobilieres/(?P<id>[0-9]+)\.htm')
     m = re_id.finditer(response.read())
@@ -146,6 +149,12 @@ if cmd == 'leech':
                 desc = m3[0].decode('cp1252')
             except:
                 desc = ''
+                
+            m3 = re.findall('Siren : ([0-9]+)<', rep)
+            try:
+                siren = m3[0]
+            except:
+                siren = 0
 
         except Exception as e:
             print 'Error on url', url
@@ -154,14 +163,15 @@ if cmd == 'leech':
             continue
 
         #print ville
-        f = u'{0:6}€ {1:3}m² {4:4}€/m² {2:5} {3:22} {6:20} {7}/{8}/{9}@{10} {5} {11}'
+        f = u'{0:6}€ {1:3}m² {4:4}€/m² {2:5} {3:22} {6:20} {7}/{8}/{9}@{10} {5} {12} {11}'
         print f.format(
             prix, surface, cp, ville, prix / surface,
-            url, nom, jour, mois, annee, heure, tel_raw)
+            url, nom, jour, mois, annee, heure, tel_raw, siren)
         print desc
 
-        c.execute('INSERT INTO apparts VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', \
-                  (id, prix, surface, cp, ville, nom, jour, mois, annee, heure, tel_raw, desc))
+        c.execute('INSERT INTO apparts VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', \
+                  (id, prix, surface, cp, ville, nom, jour, mois, annee, heure, \
+                   tel_raw, desc, siren))
 
         #exit(0)
 
