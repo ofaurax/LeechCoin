@@ -188,6 +188,7 @@ if cmd == 'stats':
     c = conn.cursor()
 
     prix_m2_cp = {}
+    prix_m2_cp_pro = {}
 
     if cp:
         c.execute('SELECT * FROM apparts WHERE cp=?', (cp,))
@@ -201,6 +202,10 @@ if cmd == 'stats':
             prix_m2_cp[tmp[3]]
         except:
             prix_m2_cp[tmp[3]] = []
+        try:
+            prix_m2_cp_pro[tmp[3]]
+        except:
+            prix_m2_cp_pro[tmp[3]] = []
 
         if tmp[1]/tmp[2] > 1000 and tmp[1]/tmp[2] < 8000:
 
@@ -211,14 +216,31 @@ if cmd == 'stats':
                     tmp[5].encode('utf8'),
                     'http://www.leboncoin.fr/ventes_immobilieres/'+tmp[0]+'.htm')
 
-            prix_m2_cp[tmp[3]].append(tmp[1]/tmp[2])
-        #print tmp[1]/tmp[2], tmp[3]
+            #print tmp[12]
+            if int(tmp[12]) > 0: #siren
+                prix_m2_cp_pro[tmp[3]].append(tmp[1]/tmp[2])
+            else: # pas pro
+                prix_m2_cp[tmp[3]].append(tmp[1]/tmp[2])
+            #print tmp[1]/tmp[2], tmp[3]
         tmp = c.fetchone()
 
     #print prix_m2_cp
+    #print prix_m2_cp_pro
 
-    for k,v in prix_m2_cp.iteritems():
-        if len(v) < 2: continue
-        print u'{0:5} {1:4}€/m² {2}'.format( k, sum(v)/len(v), len(v) )
+    for k in list(set(prix_m2_cp.keys() + prix_m2_cp_pro.keys())):
+
+        numpart = len(prix_m2_cp[k])
+        if numpart: moypart = sum(prix_m2_cp[k])/numpart
+        else: moypart = 0
+
+        numpro = len(prix_m2_cp_pro[k])
+        if numpro: moypro = sum(prix_m2_cp_pro[k])/numpro
+        else: moypro = 0
+
+        if moypro: ratio = moypart / float(moypro)
+        else: ratio = 0
+
+        print u'{0:5} part({1}): {2:4}€/m² pro({3}): {4:4}€/m² {5}%'.format( \
+            k, numpart, moypart, numpro, moypro, int(ratio*100) )
 
 print 'Fin.'
