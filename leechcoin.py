@@ -7,6 +7,7 @@ import re
 import sqlite3
 import traceback
 import datetime
+import csv
 
 headers = { 'User-Agent' : 'Mozilla/5.0 (compatible; Googlebot/2.1;'
                                +' +http://www.google.com/bot.html)' } 
@@ -217,8 +218,28 @@ if cmd == 'stats':
 
     #print prix_m2_cp
 
+    cp_ville = {}
+    with open('data/insee.csv') as inseefile:
+        inseedata = csv.reader(inseefile, delimiter=';')
+        for ligne in inseedata:
+            try:
+                cp_ville[int(ligne[1])] = ligne[0]
+                #print int(ligne[1]), ligne[0]
+            except ValueError:
+                pass
+
     for k,v in prix_m2_cp.iteritems():
         if len(v) < 2: continue
-        print u'{0:5} {1:4}€/m² {2}'.format( k, sum(v)/len(v), len(v) )
+        print u'{0:5} {1:4}€/m² {2:3} {3}'.format( \
+            k, sum(v)/len(v), len(v), cp_ville[k])
+
+if cmd == 'test':
+    with open('data/insee.csv') as inseefile:
+        inseedata = csv.reader(inseefile, delimiter=';')
+        for ligne in inseedata:
+            try:
+                print int(ligne[1]), ligne[0]
+            except ValueError:
+                pass
 
 print 'Fin.'
