@@ -7,6 +7,7 @@ import re
 import sqlite3
 import traceback
 import datetime
+import csv
 
 headers = { 'User-Agent' : 'Mozilla/5.0 (compatible; Googlebot/2.1;'
                                +' +http://www.google.com/bot.html)' } 
@@ -227,6 +228,16 @@ if cmd == 'stats':
     #print prix_m2_cp
     #print prix_m2_cp_pro
 
+    cp_ville = {}
+    with open('data/insee.csv') as inseefile:
+        inseedata = csv.reader(inseefile, delimiter=';')
+        for ligne in inseedata:
+            try:
+                cp_ville[int(ligne[1])] = ligne[0]
+                #print int(ligne[1]), ligne[0]
+            except ValueError:
+                pass
+
     for k in list(set(prix_m2_cp.keys() + prix_m2_cp_pro.keys())):
 
         numpart = len(prix_m2_cp[k])
@@ -240,7 +251,16 @@ if cmd == 'stats':
         if moypro: ratio = moypart / float(moypro)
         else: ratio = 0
 
-        print u'{0:5} part({1}): {2:4}€/m² pro({3}): {4:4}€/m² {5}%'.format( \
-            k, numpart, moypart, numpro, moypro, int(ratio*100) )
+        print u'{0:5} part({1}): {2:4}€/m² pro({3}): {4:4}€/m² {5}% {6}'.format( \
+            k, numpart, moypart, numpro, moypro, int(ratio*100), cp_ville[k])
+
+if cmd == 'test':
+    with open('data/insee.csv') as inseefile:
+        inseedata = csv.reader(inseefile, delimiter=';')
+        for ligne in inseedata:
+            try:
+                print int(ligne[1]), ligne[0]
+            except ValueError:
+                pass
 
 print 'Fin.'
