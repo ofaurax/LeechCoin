@@ -251,7 +251,7 @@ if cmd == 'stats':
         if moypro: ratio = moypart / float(moypro)
         else: ratio = 0
 
-        print u'{0:5} part({1}): {2:4}€/m² pro({3}): {4:4}€/m² {5}% {6}'.format( \
+        print u'{0:5} part({1:3}): {2:4}€/m² pro({3:3}): {4:4}€/m² {5:3}% {6}'.format( \
             k, numpart, moypart, numpro, moypro, int(ratio*100), cp_ville[k])
 
 if cmd == 'test':
