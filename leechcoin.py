@@ -105,7 +105,10 @@ if cmd == 'leech':
             cp = m3[0]
             m3 = re.findall(
                 '<th>Ville :</th>\s*<td>([^<]+)</td>', rep)
-            ville = m3[0].decode('cp1252')
+            try:
+                ville = m3[0].decode('cp1252')
+            except IndexError:
+                ville = ''
             m3 = re.findall(
                 'Mise en ligne par <a rel="nofollow" '
                 + 'href="http://www2.leboncoin.fr/ar.ca=21_s&amp;id=[0-9]+" '
