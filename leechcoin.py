@@ -14,7 +14,7 @@ headers = { 'User-Agent' : 'Mozilla/5.0 (compatible; Googlebot/2.1;'
                                # http://www.useragentstring.com
 
 parser = argparse.ArgumentParser()
-parser.add_argument('cmd', choices=['help', 'leech', 'list', 'stats'])
+parser.add_argument('cmd', choices=['help', 'leech', 'list', 'stats', 'search'])
 parser.add_argument('-d',
                     help='database name to use (default:database.db)',
                     default='database.db')
@@ -266,4 +266,21 @@ if cmd == 'test':
             except ValueError:
                 pass
 
+if cmd == 'search':
+
+    try:
+        s = args.params[0]
+    except:
+        raise Exception('Recherche manquante')
+
+    conn = sqlite3.connect(database)
+    c = conn.cursor()
+
+    c.execute("SELECT * FROM apparts WHERE desc LIKE ?", ('%'+s+'%',))
+        
+    tmp = c.fetchone()
+    while(tmp):
+        print fdb.format(*tmp)
+        tmp = c.fetchone()
+        
 print 'Fin.'
