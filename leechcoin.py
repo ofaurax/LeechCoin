@@ -14,7 +14,7 @@ headers = { 'User-Agent' : 'Mozilla/5.0 (compatible; Googlebot/2.1;'
                                # http://www.useragentstring.com
 
 parser = argparse.ArgumentParser()
-parser.add_argument('cmd', choices=['help', 'leech', 'list', 'stats', 'search'])
+parser.add_argument('cmd', choices=['help', 'leech', 'list', 'stats', 'search', 'config'])
 parser.add_argument('-d',
                     help='database name to use (default:database.db)',
                     default='database.db')
@@ -286,5 +286,36 @@ if cmd == 'search':
     while(tmp):
         print fdbs.format(*tmp)
         tmp = c.fetchone()
+
+if cmd == 'config':
+
+    if len(args.params) < 1:
+        conn = sqlite3.connect(database)
+        c = conn.cursor()
+
+        c.execute("SELECT * FROM config")
+
+        print 'Config:'
+        tmp = c.fetchone()
+        while(tmp):
+            print u'{0:10}: {1}'.format(*tmp)
+            tmp = c.fetchone()
+
+
+    elif len(args.params) != 2:
+        raise Exception('Attendu: clé valeur')
+
+    else:
+        conn = sqlite3.connect(database)
+        c = conn.cursor()
+
+        c.execute('CREATE TABLE IF NOT EXISTS config (key text PRIMARY KEY, value text)')
+
+        try:
+            c.execute('INSERT INTO config VALUES (?, ?)', (args.params[0], args.params[1]))
+        except sqlite3.IntegrityError:
+            c.execute('UPDATE config SET value=? WHERE key=?', (args.params[1], args.params[0]))
+                
+        conn.commit()
         
 print 'Fin.'
