@@ -97,7 +97,10 @@ if cmd == 'leech':
 
         try:
             m3 = re.findall('class="price"\>([0-9 ]+).*\<', rep)
-            prix = int(m3[0].replace(' ', ''))
+            try:
+                prix = int(m3[0].replace(' ', ''))
+            except:
+                print rep
             m3 = re.findall(
                 '<th>Surface : </th>\s*<td>([0-9 ]+) m<sup>2</sup>', rep)
             surface = int(m3[0].replace(' ', ''))
