@@ -27,8 +27,9 @@ print 'Args :', args
 cmd = args.cmd
 database = args.d
 
-fgen = u'{0} {1:6}€ {2:3}m² {3} {4:30} {5:30} {6}/{7}/{8} {9}'
+fgen = u'{0} {1:6}€ {2:3}m² {3} {4:30} {5:30} {6}/{7}/{8} {9} http://www.leboncoin.fr/ventes_immobilieres/{0}.htm'
 fdb = u'DB : ' + fgen
+fdbs = fdb + ' {11}'
 
 if cmd == 'help':
     print 'leech [num]: download of data from page [num] (default:1)'
@@ -280,7 +281,7 @@ if cmd == 'search':
         
     tmp = c.fetchone()
     while(tmp):
-        print fdb.format(*tmp)
+        print fdbs.format(*tmp)
         tmp = c.fetchone()
         
 print 'Fin.'
