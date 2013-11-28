@@ -322,7 +322,7 @@ if cmd == 'searchconfig':
             surfmin = tmp[1]
         tmp = c.fetchone()
     
-    c.execute("SELECT * FROM apparts ORDER BY annee,mois,jour,id")
+    c.execute("SELECT * FROM apparts ORDER BY annee,mois,jour,heure,id")
         
     tmp = c.fetchone()
     while(tmp):
