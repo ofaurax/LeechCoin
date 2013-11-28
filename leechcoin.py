@@ -14,7 +14,7 @@ headers = { 'User-Agent' : 'Mozilla/5.0 (compatible; Googlebot/2.1;'
                                # http://www.useragentstring.com
 
 parser = argparse.ArgumentParser()
-parser.add_argument('cmd', choices=['help', 'leech', 'list', 'stats', 'search', 'config'])
+parser.add_argument('cmd', choices=['help', 'leech', 'leechuntil', 'list', 'stats', 'search', 'config'])
 parser.add_argument('-d',
                     help='database name to use (default:database.db)',
                     default='database.db')
@@ -43,13 +43,7 @@ if cmd == 'list':
     for tmp in c.execute('SELECT * FROM apparts'):
         print fdb.format(*tmp)
 
-if cmd == 'leech':
-
-    try:
-        page = int(args.params[0])
-    except:
-        page = 1
-
+def leechpage(page):
     conn = sqlite3.connect(database)
     c = conn.cursor()
     c.execute('CREATE TABLE IF NOT EXISTS apparts ( '+
@@ -184,6 +178,26 @@ if cmd == 'leech':
         #exit(0)
 
     conn.commit()
+
+if cmd == 'leech':
+
+    try:
+        page = int(args.params[0])
+    except:
+        page = 1
+
+    leechpage(page)
+
+if cmd == 'leechuntil':
+
+    try:
+        page = int(args.params[0])
+    except:
+        page = 1
+
+    for i in range(1, page+1):
+        print 'Leech', i
+        leechpage(i)
 
 if cmd == 'stats':
 
