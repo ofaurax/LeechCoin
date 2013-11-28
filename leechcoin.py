@@ -14,7 +14,7 @@ headers = { 'User-Agent' : 'Mozilla/5.0 (compatible; Googlebot/2.1;'
                                # http://www.useragentstring.com
 
 parser = argparse.ArgumentParser()
-parser.add_argument('cmd', choices=['help', 'leech', 'leechuntil', 'list', 'stats', 'search', 'config'])
+parser.add_argument('cmd', choices=['help', 'leech', 'leechuntil', 'list', 'stats', 'search', 'searchconfig', 'config'])
 parser.add_argument('-d',
                     help='database name to use (default:database.db)',
                     default='database.db')
@@ -27,7 +27,7 @@ print 'Args :', args
 cmd = args.cmd
 database = args.d
 
-fgen = u'{0} {1:6}€ {2:3}m² {3} {4:30} {5:30} {6}/{7}/{8} {9} http://www.leboncoin.fr/ventes_immobilieres/{0}.htm'
+fgen = u'{0} {1:6}€ {2:3}m² {3} {4:25} {5:35} {6}/{7}/{8} {9} http://www.leboncoin.fr/ventes_immobilieres/{0}.htm'
 fdb = u'DB : ' + fgen
 fdbs = fdb + ' {11}'
 
@@ -299,6 +299,35 @@ if cmd == 'search':
     tmp = c.fetchone()
     while(tmp):
         print fdbs.format(*tmp)
+        tmp = c.fetchone()
+
+if cmd == 'searchconfig':
+
+    conn = sqlite3.connect(database)
+    c = conn.cursor()
+    
+    c.execute("SELECT * FROM config")
+
+    tmp = c.fetchone()
+    while(tmp):
+        print u'{0:10}: {1}'.format(*tmp)
+        if tmp[0] == 'cp' :
+            print 'CP:',tmp[1]
+            cp = tmp[1].split(',')
+        if tmp[0] == 'prixmax' :
+            print 'PrixMax:',tmp[1]
+            prixmax = tmp[1]
+        if tmp[0] == 'surfmin' :
+            print 'SurfMin:',tmp[1]
+            surfmin = tmp[1]
+        tmp = c.fetchone()
+    
+    c.execute("SELECT * FROM apparts ORDER BY annee,mois,jour,id")
+        
+    tmp = c.fetchone()
+    while(tmp):
+        if str(tmp[3]) in cp:
+            print fdb.format(*tmp)
         tmp = c.fetchone()
 
 if cmd == 'config':
