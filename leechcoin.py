@@ -29,7 +29,7 @@ database = args.d
 
 fgen = u'{0} {1:6}€ {2:3}m² {3} {4:25} {5:35} {6}/{7}/{8} {9} http://www.leboncoin.fr/ventes_immobilieres/{0}.htm'
 fdb = u'DB : ' + fgen
-fdbs = fdb + ' {11}'
+fdbs = fdb + u' {11}'
 
 if cmd == 'help':
     print 'leech [num]: download of data from page [num] (default:1)'
@@ -79,6 +79,12 @@ def leechpage(page):
                 print fdb.format(*tmp)
             except Exception:
                 print tmp
+                tmp = list(tmp)
+                print type(tmp[4])
+                tmp[4] = tmp[4].encode('utf-8')
+                print type(tmp[4])
+                print tmp
+                print fdb.format(*tmp)
             continue
 
         try:
@@ -87,7 +93,7 @@ def leechpage(page):
             print 'Error on url', url
             print e
             continue
-        rep = response.read()
+        rep = response.read().decode('cp1252')
 
         try:
             m3 = re.findall('class="price"\>([0-9 ]+).*\<', rep)
@@ -104,7 +110,7 @@ def leechpage(page):
             m3 = re.findall(
                 '<th>Ville :</th>\s*<td>([^<]+)</td>', rep)
             try:
-                ville = m3[0].decode('cp1252')
+                ville = m3[0]
             except IndexError:
                 ville = ''
             m3 = re.findall(
@@ -112,9 +118,9 @@ def leechpage(page):
                 + 'href="http://www2.leboncoin.fr/ar.ca=21_s&amp;id=[0-9]+" '
                 + 'onclick="return [^"]+">([^<]+)</a> '
                 + 'le (\d+) (.+) &agrave; (\d+:\d+). </div>', rep)
-            nom = m3[0][0].decode('cp1252')
+            nom = m3[0][0]
             jour = m3[0][1]
-            mois = m3[0][2].decode('cp1252')
+            mois = m3[0][2]
             if mois[:4] == 'janv' : mois = 1
             elif mois[0] == 'f' : mois = 2
             elif mois[:4] == 'mars' : mois = 3
@@ -148,7 +154,7 @@ def leechpage(page):
 
             m3 = re.findall('class="content">([^<]+)<', rep)
             try:
-                desc = m3[0].decode('cp1252')
+                desc = m3[0]
             except:
                 desc = ''
                 
