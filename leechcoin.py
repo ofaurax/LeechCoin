@@ -14,7 +14,7 @@ headers = { 'User-Agent' : 'Mozilla/5.0 (compatible; Googlebot/2.1;'
                                # http://www.useragentstring.com
 
 parser = argparse.ArgumentParser()
-parser.add_argument('cmd', choices=['help', 'leech', 'leechuntil', 'list', 'stats', 'search', 'searchconfig', 'config'])
+parser.add_argument('cmd', choices=['help', 'leech', 'leechuntil', 'list', 'stats', 'search', 'searchconfig', 'config', 'check'])
 parser.add_argument('-d',
                     help='database name to use (default:database.db)',
                     default='database.db')
@@ -55,7 +55,8 @@ def leechpage(page):
     'jour int, mois int, annee int, heure text, ' +
     'tel text, ' +
     'desc text, ' +
-    'siren text)')
+    'siren text, ' +
+    'enligne int)')
 
     req = urllib2.Request(
         'http://www.leboncoin.fr/ventes_immobilieres/offres/'
@@ -132,7 +133,7 @@ def leechpage(page):
             elif mois[:4] == 'sept' : mois = 9
             elif mois[:4] == 'octo' : mois = 10
             elif mois[:3] == 'nov' : mois = 11
-            elif mois[:3] == 'déc' : mois = 12
+            elif mois[0] == 'd' : mois = 12
             else : mois = 0
             
             ddt = datetime.datetime.today()
@@ -177,9 +178,9 @@ def leechpage(page):
             url, nom, jour, mois, annee, heure, tel_raw, siren)
         print desc
 
-        c.execute('INSERT INTO apparts VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', \
+        c.execute('INSERT INTO apparts VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', \
                   (id, prix, surface, cp, ville, nom, jour, mois, annee, heure, \
-                   tel_raw, desc, siren))
+                   tel_raw, desc, siren, 1))
 
         #exit(0)
 
@@ -366,5 +367,42 @@ if cmd == 'config':
             c.execute('UPDATE config SET value=? WHERE key=?', (args.params[1], args.params[0]))
                 
         conn.commit()
+
+def check_id(id):
+
+    url = 'http://www.leboncoin.fr/ventes_immobilieres/' + id + '.htm'
+    try:
+        response = urllib2.urlopen(url)
+    except urllib2.HTTPError as he:
+        #Usually, 404
+        print 'HTTP Error on url', url
+        print he
+        return False
+    except Exception as e:
+        print 'Error on url', url
+        print e
+
+    #rep = response.read().decode('cp1252')
+    #if rep.find(u'Cette annonce est désactivée') > -1: return False
+
+    return True
+
+if cmd == 'check':
+
+    conn = sqlite3.connect(database)
+    c = conn.cursor()
+
+    c.execute("SELECT id FROM apparts WHERE enligne=1")
+
+    tmp = c.fetchone()
+    dead = []
+    while(tmp):
+        print tmp
+        if not check_id(tmp[0]): dead.append(tmp[0])
+        tmp = c.fetchone()
+
+    for d in dead:
+        print d
+        #c.execute("UPDATE apparts SET enligne=0 WHERE id=?", (tmp[0],))
         
 print 'Fin.'
