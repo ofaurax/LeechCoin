@@ -27,7 +27,7 @@ print 'Args :', args
 cmd = args.cmd
 database = args.d
 
-fgen = u'{0} {1:6}€ {2:3}m² {3} {4:25} {5:35} {6}/{7}/{8} {9} http://www.leboncoin.fr/ventes_immobilieres/{0}.htm'
+fgen = u'{0} {1:6}€ {2:3}m² {3} {4:25} {5:35} {6}/{7}/{8} {9} {13} http://www.leboncoin.fr/ventes_immobilieres/{0}.htm'
 fdb = u'DB : ' + fgen
 fdbs = fdb + u' {11}'
 
@@ -153,7 +153,7 @@ def leechpage(page):
                 tel_raw = ''
             #print m3, m3[0]
 
-            m3 = re.findall('class="content">([^<]+)<', rep)
+            m3 = re.findall('class="content">(.+?)</div>', rep, re.DOTALL)
             try:
                 desc = m3[0]
             except:
@@ -403,6 +403,8 @@ if cmd == 'check':
 
     for d in dead:
         print d
-        #c.execute("UPDATE apparts SET enligne=0 WHERE id=?", (tmp[0],))
+        c.execute("UPDATE apparts SET enligne=0 WHERE id=?", (d,))
         
+    conn.commit()
+
 print 'Fin.'
