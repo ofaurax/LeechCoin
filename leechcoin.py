@@ -61,7 +61,8 @@ def leechpage(page):
     req = urllib2.Request(
         'http://www.leboncoin.fr/ventes_immobilieres/offres/'
         + 'provence_alpes_cote_d_azur/bouches_du_rhone/'
-        + '?pe=8&sqs=6&ros=2&ret=1&ret=2'
+        + '?ps=10&pe=14&ros=4'
+        + '&ret=1' # 1:maison, appart= '&ret=2'
         #+ '&f=p' # p:particuler c:pro
         + '&o=' + str(page), None, headers) 
     response = urllib2.urlopen(req)
@@ -114,14 +115,11 @@ def leechpage(page):
                 ville = m3[0]
             except IndexError:
                 ville = ''
-            m3 = re.findall(
-                'Mise en ligne par <a rel="nofollow" '
-                + 'href="http://www2.leboncoin.fr/ar.ca=21_s&amp;id=[0-9]+" '
-                + 'onclick="return [^"]+">([^<]+)</a> '
-                + 'le (\d+) (.+) &agrave; (\d+:\d+). </div>', rep)
-            nom = m3[0][0]
-            jour = m3[0][1]
-            mois = m3[0][2]
+            m3 = re.findall("'utilisateur_v2','N'\)\">([^<]+)</a>", rep)
+            nom = m3[0]
+            m3 = re.findall(' Mise en ligne le (\d+) (.+) &agrave; (\d+:\d+).', rep)
+            jour = m3[0][0]
+            mois = m3[0][1]
             if mois[:4] == 'janv' : mois = 1
             elif mois[0] == 'f' : mois = 2
             elif mois[:4] == 'mars' : mois = 3
@@ -144,7 +142,7 @@ def leechpage(page):
             if ddt.month < 6 and mois > 6:
                 annee -= 1
 
-            heure = m3[0][3]
+            heure = m3[0][2]
 
             m3 = re.findall('/pg/0([^\.]+)\.gif" class="AdPhonenum', rep)
             try:
@@ -159,7 +157,7 @@ def leechpage(page):
             except:
                 desc = ''
                 
-            m3 = re.findall('Siren : ([0-9]+)<', rep)
+            m3 = re.findall('Siren : ([0-9]+)', rep)
             try:
                 siren = m3[0]
             except:
@@ -329,7 +327,7 @@ if cmd == 'searchconfig':
             surfmin = tmp[1]
         tmp = c.fetchone()
     
-    c.execute("SELECT * FROM apparts ORDER BY annee,mois,jour,heure,id")
+    c.execute("SELECT * FROM apparts ORDER BY cp,annee,mois,jour,heure,id")
         
     tmp = c.fetchone()
     while(tmp):
