@@ -200,7 +200,7 @@ if cmd == 'leechuntil':
     except:
         page = 1
 
-    for i in range(1, page+1):
+    for i in range(page, 0, -1):
         print 'Leech', i
         leechpage(i)
 
