@@ -43,7 +43,7 @@ if cmd == 'list':
     for tmp in c.execute('SELECT * FROM apparts'):
         print fdb.format(*tmp)
 
-def leechpage(page):
+def leechpage(page, cp):
     conn = sqlite3.connect(database)
     c = conn.cursor()
     c.execute('CREATE TABLE IF NOT EXISTS apparts ( '+
@@ -60,10 +60,13 @@ def leechpage(page):
 
     req = urllib2.Request(
         'http://www.leboncoin.fr/ventes_immobilieres/offres/'
-        + 'provence_alpes_cote_d_azur/bouches_du_rhone/'
-        + '?ps=10&pe=14&ros=4'
+        #+ 'provence_alpes_cote_d_azur/bouches_du_rhone/'
+        + '?'
+        + 'ps=10&pe=14' # de 250k à 350k
+        + '&ros=4' # pièces min
         + '&ret=1' # 1:maison, appart= '&ret=2'
         #+ '&f=p' # p:particuler c:pro
+        + '&location=' + cp
         + '&o=' + str(page), None, headers) 
     response = urllib2.urlopen(req)
     re_id = re.compile('ventes_immobilieres/(?P<id>[0-9]+)\.htm')
@@ -191,7 +194,21 @@ if cmd == 'leech':
     except:
         page = 1
 
-    leechpage(page)
+    conn = sqlite3.connect(database)
+    c = conn.cursor()
+    c.execute("SELECT * FROM config")
+
+    tmp = c.fetchone()
+    while(tmp):
+        print u'{0:10}: {1}'.format(*tmp)
+        if tmp[0] == 'cp' :
+            print 'CP:',tmp[1]
+            cp = tmp[1].split(',')
+        tmp = c.fetchone()
+
+    for cpi in cp:
+        print 'Leech', cpi, page
+        leechpage(page, cpi)
 
 if cmd == 'leechuntil':
 
@@ -200,9 +217,22 @@ if cmd == 'leechuntil':
     except:
         page = 1
 
-    for i in range(page, 0, -1):
-        print 'Leech', i
-        leechpage(i)
+    conn = sqlite3.connect(database)
+    c = conn.cursor()
+    c.execute("SELECT * FROM config")
+
+    tmp = c.fetchone()
+    while(tmp):
+        print u'{0:10}: {1}'.format(*tmp)
+        if tmp[0] == 'cp' :
+            print 'CP:',tmp[1]
+            cp = tmp[1].split(',')
+        tmp = c.fetchone()
+
+    for cpi in cp:
+        for i in range(page, 0, -1):
+            print 'Leech', cpi, i
+            leechpage(i,cpi)
 
 if cmd == 'stats':
 
@@ -327,7 +357,7 @@ if cmd == 'searchconfig':
             surfmin = tmp[1]
         tmp = c.fetchone()
     
-    c.execute("SELECT * FROM apparts ORDER BY cp,annee,mois,jour,heure,id")
+    c.execute("SELECT * FROM apparts ORDER BY annee,mois,jour,cp,heure,id")
         
     tmp = c.fetchone()
     while(tmp):
