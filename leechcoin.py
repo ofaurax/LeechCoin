@@ -27,7 +27,7 @@ print 'Args :', args
 cmd = args.cmd
 database = args.d
 
-fgen = u'{0} {1:6}€ {2:3}m² {3} {4:25} {5:35} {6}/{7}/{8} {9} {13} http://www.leboncoin.fr/ventes_immobilieres/{0}.htm'
+fgen = u"{0} {1:6}€ {2:3}m² {3} {4:25} {5:35} {6:2}/{7:2}/{8} {9} enligne:{13}\nhttp://www.leboncoin.fr/ventes_immobilieres/{0}.htm"
 fdb = u'DB : ' + fgen
 fdbs = fdb + u' {11}'
 
@@ -327,7 +327,7 @@ if cmd == 'searchconfig':
             surfmin = tmp[1]
         tmp = c.fetchone()
     
-    c.execute("SELECT * FROM apparts ORDER BY cp,annee,mois,jour,heure,id")
+    c.execute("SELECT * FROM apparts ORDER BY annee,mois,jour,cp,heure,id")
         
     tmp = c.fetchone()
     while(tmp):
